@@ -1,1 +1,424 @@
-qr koodi generaattori
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR-koodi Generaattori – Luo ilmainen QR-koodi verkossa</title>
+<meta name="description" content="Ilmainen QR-koodi generaattori suomeksi. Luo, muokkaa ja lataa QR-koodeja verkkosivuille, teksteille, WiFille ja yhteystiedoille. Toimii mobiilissa ja tietokoneella.">
+<meta name="keywords" content="QR-koodi, QR generaattori, ilmainen QR-koodi, luo QR-koodi, QR-koodi suomeksi">
+<meta name="author" content="QR-koodi Generaattori">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://qr-koodi-generaattori.pages.dev/">
+
+<!-- Open Graph -->
+<meta property="og:title" content="QR-koodi Generaattori – Luo ilmainen QR-koodi verkossa">
+<meta property="og:description" content="Ilmainen QR-koodi generaattori suomeksi. Luo ja lataa QR-koodeja helposti.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://qr-koodi-generaattori.pages.dev/">
+<meta property="og:locale" content="fi_FI">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "QR-koodi Generaattori",
+  "url": "https://qr-koodi-generaattori.pages.dev/",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "All",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  },
+  "inLanguage": "fi"
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    color: #fff;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  header h1 { font-size: clamp(1.6rem, 4vw, 2.6rem); margin-bottom: 10px; }
+  header p { font-size: clamp(1rem, 2.5vw, 1.15rem); opacity: 0.95; max-width: 700px; margin: 0 auto; }
+  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+  .tool-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    padding: 28px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 2;
+  }
+  .field { margin-bottom: 18px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+  input[type="text"], textarea, select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  }
+  textarea { resize: vertical; min-height: 90px; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .row .field { flex: 1; min-width: 140px; }
+  .color-row { display: flex; align-items: center; gap: 10px; }
+  input[type="color"] {
+    width: 48px; height: 44px; border: 1px solid var(--border);
+    border-radius: 10px; cursor: pointer; background: none;
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--primary); color: #fff; border: none;
+    padding: 14px 22px; border-radius: 10px; font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: background 0.2s, transform 0.1s; width: 100%;
+  }
+  .btn:hover { background: var(--primary-dark); }
+  .btn:active { transform: scale(0.98); }
+  .btn-secondary { background: #10b981; }
+  .btn-secondary:hover { background: #059669; }
+  .buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+  .buttons .btn { flex: 1; min-width: 140px; }
+  #qr-output {
+    display: flex; justify-content: center; align-items: center;
+    padding: 24px; background: #fff; border: 2px dashed var(--border);
+    border-radius: var(--radius); margin-top: 22px; min-height: 200px;
+  }
+  #qr-output img, #qr-output canvas { border-radius: 6px; }
+  .placeholder { color: var(--muted); text-align: center; font-size: 0.95rem; }
+  article {
+    background: var(--card); border-radius: var(--radius);
+    padding: 32px; margin-top: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  }
+  article h2 { font-size: 1.6rem; margin: 30px 0 12px; color: var(--primary-dark); }
+  article h2:first-child { margin-top: 0; }
+  article h3 { font-size: 1.25rem; margin: 22px 0 10px; }
+  article p { margin-bottom: 16px; color: #334155; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #334155; }
+  article li { margin-bottom: 8px; }
+  article a { color: var(--primary); text-decoration: underline; }
+  .toc { background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; margin-bottom: 24px; }
+  .toc h3 { margin-top: 0; }
+  .faq-item { border-bottom: 1px solid var(--border); padding: 14px 0; }
+  .faq-item:last-child { border-bottom: none; }
+  footer {
+    text-align: center; padding: 30px 20px; color: var(--muted);
+    font-size: 0.9rem; margin-top: 20px;
+  }
+  footer a { color: var(--primary); }
+  @media (max-width: 600px) {
+    .tool-card { padding: 20px; }
+    article { padding: 22px; }
+    header { padding: 30px 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>QR-koodi Generaattori</h1>
+  <p>Luo ilmainen QR-koodi verkossa muutamassa sekunnissa. Toimii täydellisesti niin puhelimella kuin tietokoneella.</p>
+</header>
+
+<div class="container">
+  <!-- TOOL -->
+  <div class="tool-card">
+    <div class="field">
+      <label for="qr-type">Valitse QR-koodin tyyppi</label>
+      <select id="qr-type">
+        <option value="url">Verkko-osoite (URL)</option>
+        <option value="text">Teksti</option>
+        <option value="email">Sähköposti</option>
+        <option value="phone">Puhelinnumero</option>
+        <option value="sms">Tekstiviesti (SMS)</option>
+        <option value="wifi">WiFi-verkko</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="qr-input" id="input-label">Syötä verkko-osoite</label>
+      <textarea id="qr-input" placeholder="https://esimerkki.fi"></textarea>
+    </div>
+
+    <!-- WiFi extra fields -->
+    <div id="wifi-fields" style="display:none;">
+      <div class="row">
+        <div class="field">
+          <label for="wifi-pass">WiFi-salasana</label>
+          <input type="text" id="wifi-pass" placeholder="Salasana">
+        </div>
+        <div class="field">
+          <label for="wifi-enc">Salaustyyppi</label>
+          <select id="wifi-enc">
+            <option value="WPA">WPA/WPA2</option>
+            <option value="WEP">WEP</option>
+            <option value="nopass">Ei salasanaa</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="qr-size">Koko (px)</label>
+        <select id="qr-size">
+          <option value="200">200 x 200</option>
+          <option value="300" selected>300 x 300</option>
+          <option value="400">400 x 400</option>
+          <option value="600">600 x 600</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="qr-color">QR-koodin väri</label>
+        <div class="color-row">
+          <input type="color" id="qr-color" value="#000000">
+          <span style="color:var(--muted);font-size:0.9rem;">Etuväri</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="qr-bg">Taustaväri</label>
+        <div class="color-row">
+          <input type="color" id="qr-bg" value="#ffffff">
+          <span style="color:var(--muted);font-size:0.9rem;">Tausta</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn" id="generate-btn">Luo QR-koodi</button>
+      <button class="btn btn-secondary" id="download-btn">Lataa PNG</button>
+    </div>
+
+    <div id="qr-output">
+      <span class="placeholder">QR-koodisi ilmestyy tähän. Syötä tiedot ja paina "Luo QR-koodi".</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  var qrcode = null;
+  var typeSelect = document.getElementById('qr-type');
+  var inputLabel = document.getElementById('input-label');
+  var qrInput = document.getElementById('qr-input');
+  var wifiFields = document.getElementById('wifi-fields');
+  var output = document.getElementById('qr-output');
+
+  var config = {
+    url:   { label: 'Syötä verkko-osoite', ph: 'https://esimerkki.fi' },
+    text:  { label: 'Syötä teksti', ph: 'Kirjoita tekstisi tähän' },
+    email: { label: 'Syötä sähköpostiosoite', ph: 'nimi@esimerkki.fi' },
+    phone: { label: 'Syötä puhelinnumero', ph: '+358 40 1234567' },
+    sms:   { label: 'Syötä puhelinnumero', ph: '+358 40 1234567' },
+    wifi:  { label: 'Syötä WiFi-verkon nimi (SSID)', ph: 'Verkon nimi' }
+  };
+
+  typeSelect.addEventListener('change', function () {
+    var t = typeSelect.value;
+    inputLabel.textContent = config[t].label;
+    qrInput.placeholder = config[t].ph;
+    wifiFields.style.display = (t === 'wifi') ? 'block' : 'none';
+  });
+
+  function buildData() {
+    var t = typeSelect.value;
+    var val = qrInput.value.trim();
+    if (!val) return '';
+    switch (t) {
+      case 'email': return 'mailto:' + val;
+      case 'phone': return 'tel:' + val;
+      case 'sms':   return 'sms:' + val;
+      case 'wifi':
+        var pass = document.getElementById('wifi-pass').value;
+        var enc = document.getElementById('wifi-enc').value;
+        return 'WIFI:T:' + enc + ';S:' + val + ';P:' + pass + ';;';
+      default: return val;
+    }
+  }
+
+  function generate() {
+    var data = buildData();
+    if (!data) {
+      output.innerHTML = '<span class="placeholder">Syötä ensin tiedot QR-koodia varten.</span>';
+      return;
+    }
+    var size = parseInt(document.getElementById('qr-size').value, 10);
+    var color = document.getElementById('qr-color').value;
+    var bg = document.getElementById('qr-bg').value;
+    output.innerHTML = '';
+    qrcode = new QRCode(output, {
+      text: data,
+      width: size,
+      height: size,
+      colorDark: color,
+      colorLight: bg,
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+
+  function download() {
+    var img = output.querySelector('img');
+    var canvas = output.querySelector('canvas');
+    var url;
+    if (img && img.src) { url = img.src; }
+    else if (canvas) { url = canvas.toDataURL('image/png'); }
+    else { alert('Luo ensin QR-koodi ennen lataamista.'); return; }
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'qr-koodi.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  document.getElementById('generate-btn').addEventListener('click', generate);
+  document.getElementById('download-btn').addEventListener('click', download);
+  qrInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generate(); }
+  });
+</script>
+
+<div class="container">
+  <article>
+    <div class="toc">
+      <h3>Sisällysluettelo</h3>
+      <ul>
+        <li><a href="#mika">Mikä on QR-koodi?</a></li>
+        <li><a href="#miten-toimii">Miten QR-koodi toimii?</a></li>
+        <li><a href="#kaytto">Näin käytät QR-koodi generaattoria</a></li>
+        <li><a href="#tyypit">QR-koodien tyypit ja käyttötarkoitukset</a></li>
+        <li><a href="#hyodyt">QR-koodien hyödyt yrityksille ja yksityisille</a></li>
+        <li><a href="#vinkit">Vinkit toimivan QR-koodin luomiseen</a></li>
+        <li><a href="#turvallisuus">Turvallisuus ja QR-koodit</a></li>
+        <li><a href="#usein-kysytyt">Usein kysytyt kysymykset</a></li>
+      </ul>
+    </div>
+
+    <h2 id="mika">Mikä on QR-koodi?</h2>
+    <p>QR-koodi (lyhenne sanoista Quick Response, eli nopea vaste) on kaksiulotteinen viivakoodi, joka pystyy tallentamaan huomattavasti enemmän tietoa kuin perinteinen yksiulotteinen viivakoodi. QR-koodi näyttää ruudukolta, jossa on mustia ja valkoisia neliöitä, ja se voidaan lukea nopeasti älypuhelimen kameralla tai erillisellä lukulaitteella. QR-koodit kehitettiin alun perin Japanissa vuonna 1994 autoteollisuuden tarpeisiin, mutta nykyään ne ovat levinneet kaikkialle maailmaan ja niitä käytetään lukemattomissa eri yhteyksissä.</p>
+    <p>Suomessa QR-koodit ovat yleistyneet nopeasti viime vuosina. Näet niitä ravintoloiden ruokalistoilla, tuotepakkauksissa, mainoksissa, käyntikorteissa, tapahtumalipuissa ja jopa laskuissa. QR-koodi tarjoaa nopean sillan fyysisen maailman ja digitaalisen sisällön välille. Kun skannaat koodin puhelimellasi, sinut ohjataan välittömästi haluttuun kohteeseen – olipa se sitten verkkosivu, WiFi-verkko, yhteystieto tai teksti.</p>
+    <p>Tämän ilmaisen QR-koodi generaattorin avulla voit luoda oman QR-koodin muutamassa sekunnissa ilman rekisteröitymistä tai maksuja. Työkalu toimii suoraan selaimessa, joten sinun ei tarvitse asentaa mitään ohjelmistoa. Se on suunniteltu erityisesti suomalaisille käyttäjille, ja se toimii moitteettomasti sekä puhelimella että tietokoneella.</p>
+
+    <h2 id="miten-toimii">Miten QR-koodi toimii?</h2>
+    <p>QR-koodin toimintaperiaate perustuu tietojen koodaamiseen kaksiulotteiseen ruudukkoon. Jokainen musta ja valkoinen neliö edustaa binäärimuotoista dataa, jonka lukulaite osaa tulkita. QR-koodissa on useita tärkeitä osia, jotka mahdollistavat sen nopean ja luotettavan lukemisen.</p>
+    <p>Koodin kolmessa kulmassa sijaitsevat suuret neliömäiset kuviot, joita kutsutaan paikannuskuvioiksi. Ne kertovat lukulaitteelle, missä asennossa koodi on, jolloin koodi voidaan lukea mistä tahansa kulmasta. Tämän ansiosta QR-koodia ei tarvitse pitää täysin suorassa, vaan kamera osaa tulkita sen myös vinosti. Koodin sisällä on lisäksi kohdistuskuvioita, ajoituskuvioita ja itse datalohkoja, jotka sisältävät varsinaisen tiedon.</p>
+    <p>Yksi QR-koodien tärkeimmistä ominaisuuksista on virheenkorjaus. QR-koodi voidaan lukea onnistuneesti, vaikka osa siitä olisi vaurioitunut, likaantunut tai peitetty. Virheenkorjaustasoja on neljä: L (matala, noin 7 %), M (keskitaso, noin 15 %), Q (korkea, noin 25 %) ja H (paras, noin 30 %). Mitä korkeampi virheenkorjaustaso on, sitä paremmin koodi kestää vaurioita, mutta samalla koodi muuttuu tiheämmäksi. Tässä generaattorissa käytetään korkeaa virheenkorjaustasoa, mikä takaa koodin luotettavan lukemisen useimmissa tilanteissa.</p>
+
+    <h2 id="kaytto">Näin käytät QR-koodi generaattoria</h2>
+    <p>QR-koodin luominen tällä työkalulla on erittäin helppoa. Sinun ei tarvitse olla tekninen asiantuntija, sillä koko prosessi on suunniteltu mahdollisimman yksinkertaiseksi. Seuraa vain näitä vaiheita, niin sinulla on valmis QR-koodi käytettävissäsi hetkessä.</p>
+    <ol>
+      <li><strong>Valitse QR-koodin tyyppi.</strong> Ylimmästä valikosta voit valita, minkälaista tietoa haluat koodata. Vaihtoehtoja ovat verkko-osoite, teksti, sähköposti, puhelinnumero, tekstiviesti ja WiFi-verkko.</li>
+      <li><strong>Syötä tiedot.</strong> Kirjoita tekstikenttään haluamasi sisältö. Jos valitsit esimerkiksi verkko-osoitteen, syötä koko URL-osoite mukaan lukien https-alkuosa.</li>
+      <li><strong>Mukauta ulkoasu.</strong> Voit valita QR-koodin koon, etuvärin ja taustavärin. Näin saat koodista juuri omaan käyttöösi sopivan.</li>
+      <li><strong>Luo koodi.</strong> Paina "Luo QR-koodi" -painiketta, ja koodi ilmestyy näytölle välittömästi.</li>
+      <li><strong>Lataa kuva.</strong> Kun olet tyytyväinen tulokseen, paina "Lataa PNG" -painiketta tallentaaksesi koodin laitteellesi. Voit sen jälkeen käyttää sitä missä tahansa – tulostaa sen, lisätä sen verkkosivulle tai jakaa sen sosiaalisessa mediassa.</li>
+    </ol>
+    <p>On hyvä muistaa, että kaikki QR-koodin luominen tapahtuu suoraan omassa selaimessasi. Tietojasi ei lähetetä palvelimelle eikä tallenneta minnekään, mikä tekee työkalusta erittäin yksityisyyttä kunnioittavan. Voit siis huoletta luoda koodeja myös arkaluontoisemmista tiedoista.</p>
+
+    <h2 id="tyypit">QR-koodien tyypit ja käyttötarkoitukset</h2>
+    <p>QR-koodeja voidaan käyttää monenlaisiin tarkoituksiin. Erilaiset tietotyypit avaavat erilaisia mahdollisuuksia, ja alla käymme läpi yleisimmät käyttötavat sekä esimerkkejä siitä, miten voit hyödyntää niitä arjessasi tai liiketoiminnassasi.</p>
+
+    <h3>Verkko-osoite (URL)</h3>
+    <p>Yleisin QR-koodin käyttötarkoitus on ohjata käyttäjä verkkosivulle. Kun asiakas skannaa koodin, hänen puhelimensa avaa määritetyn verkkosivun automaattisesti. Tämä on erittäin kätevä tapa ohjata ihmisiä esimerkiksi yrityksesi kotisivulle, verkkokauppaan, sosiaalisen median profiiliin tai tiettyyn kampanjasivuun. QR-koodi säästää käyttäjää pitkän osoitteen manuaaliselta kirjoittamiselta.</p>
+
+    <h3>Teksti</h3>
+    <p>Voit koodata QR-koodiin myös pelkkää tekstiä. Tämä on hyödyllistä esimerkiksi silloin, kun haluat välittää lyhyen viestin, ohjeen tai tuotetietoa. Kun koodi luetaan, teksti näkyy suoraan puhelimen näytöllä ilman, että sitä tarvitsee avata verkossa.</p>
+
+    <h3>Sähköposti</h3>
+    <p>Sähköposti-tyyppinen QR-koodi avaa käyttäjän sähköpostisovelluksen valmiiksi täytetyllä vastaanottajalla. Tämä on kätevä ratkaisu käyntikortteihin ja mainoksiin, sillä se madaltaa kynnystä ottaa yhteyttä. Asiakkaan ei tarvitse kirjoittaa osoitettasi käsin, vaan hän voi lähettää viestin muutamalla napautuksella.</p>
+
+    <h3>Puhelinnumero ja tekstiviesti</h3>
+    <p>Puhelinnumeroa sisältävä QR-koodi mahdollistaa soittamisen suoraan koodin lukemisen jälkeen. Vastaavasti tekstiviestikoodi avaa viestisovelluksen valmiiksi valitulla numerolla. Nämä ovat hyödyllisiä esimerkiksi asiakaspalvelun yhteystiedoissa tai tapahtumien ilmoittautumisissa.</p>
+
+    <h3>WiFi-verkko</h3>
+    <p>WiFi-QR-koodi on yksi hyödyllisimmistä ominaisuuksista erityisesti ravintoloille, kahviloille, hotelleille ja kotitalouksille. Kun vieras skannaa koodin, hänen laitteensa yhdistyy WiFi-verkkoon automaattisesti ilman salasanan manuaalista syöttämistä. Tämä säästää aikaa ja tekee vieraskokemuksesta sujuvamman. Sinun tarvitsee vain syöttää verkon nimi, salasana ja salaustyyppi, niin generaattori luo toimivan koodin.</p>
+
+    <h2 id="hyodyt">QR-koodien hyödyt yrityksille ja yksityisille</h2>
+    <p>QR-koodit tarjoavat lukuisia etuja niin yrityksille kuin yksityishenkilöillekin. Ne ovat edullisia, monikäyttöisiä ja helppokäyttöisiä, mikä tekee niistä arvokkaan työkalun nykypäivän digitaalisessa maailmassa.</p>
+    <p>Yrityksille QR-koodit tarjoavat tehokkaan tavan yhdistää offline- ja online-markkinointi. Voit lisätä koodin printtimainokseen, käyntikorttiin, tuotepakkaukseen tai myymälän ikkunaan, ja ohjata asiakkaat suoraan digitaaliseen sisältöön. Tämä mahdollistaa myös markkinoinnin tehokkuuden mittaamisen, sillä voit seurata, kuinka moni skannaa koodin. QR-koodit vähentävät myös painokustannuksia, koska voit päivittää linkin takana olevaa sisältöä ilman, että itse koodia tarvitsee muuttaa (dynaamisten koodien tapauksessa).</p>
+    <p>Ravintola-alalla QR-koodit ovat muuttaneet asiakaskokemusta merkittävästi. Digitaaliset ruokalistat, joihin päästään skannaamalla pöydässä oleva koodi, ovat yleistyneet erityisesti viime vuosina. Ne ovat hygieenisiä, helposti päivitettäviä ja ympäristöystävällisiä, koska ne vähentävät paperin kulutusta. Puhuttaessa ruokalistoista ja aamiaisvaihtoehdoista, monet suuret ketjut ovat siirtäneet valikoimansa verkkoon. Esimerkiksi jos haluat tutustua suositun pikaruokaketjun aamiaistarjontaan, voit katsoa <a href="https://burgerkingbreakfastmenu.co.uk/" target="_blank" rel="noopener">Burger King Breakfast Menu</a> -sivustolta, miten kansainväliset brändit esittelevät valikoimansa selkeästi verkossa.</p>
+    <p>Yksityishenkilöille QR-koodit tarjoavat kätevän tavan jakaa tietoa. Voit luoda koodin, joka sisältää yhteystietosi, ja lisätä sen digitaaliseen käyntikorttiin. Voit myös jakaa WiFi-verkkosi vieraille helposti, ohjata ystäviäsi valokuva-albumiin tai jakaa tapahtumakutsun. Mahdollisuudet ovat lähes rajattomat, ja QR-koodien luominen on täysin ilmaista tällä työkalulla.</p>
+
+    <h2 id="vinkit">Vinkit toimivan QR-koodin luomiseen</h2>
+    <p>Vaikka QR-koodin luominen on helppoa, muutamien perusperiaatteiden noudattaminen varmistaa, että koodisi toimii luotettavasti kaikissa tilanteissa. Alla on koottuna hyödyllisiä vinkkejä, jotka kannattaa pitää mielessä.</p>
+    <ul>
+      <li><strong>Testaa aina koodi ennen julkaisua.</strong> Skannaa luomasi QR-koodi useammalla eri laitteella varmistaaksesi, että se ohjaa oikeaan kohteeseen ja toimii moitteettomasti.</li>
+      <li><strong>Huolehdi riittävästä koosta.</strong> QR-koodin tulee olla tarpeeksi suuri, jotta se on helppo skannata. Yleisohjeena koodin tulisi olla vähintään 2 x 2 senttimetriä printtimateriaalissa. Mitä kauempaa koodi luetaan, sitä suurempi sen tulee olla.</li>
+      <li><strong>Säilytä hyvä kontrasti.</strong> Tumma koodi vaaleaa taustaa vasten toimii parhaiten. Vältä liian vaaleita värejä tai tilanteita, joissa etu- ja taustaväri ovat liian lähellä toisiaan, sillä tämä vaikeuttaa lukemista.</li>
+      <li><strong>Jätä tyhjää tilaa koodin ympärille.</strong> QR-koodi tarvitsee ympärilleen niin sanotun hiljaisen alueen eli marginaalin, jotta lukulaite tunnistaa koodin rajat. Älä sijoita tekstiä tai kuvia liian lähelle koodia.</li>
+      <li><strong>Käytä lyhyitä osoitteita.</strong> Mitä vähemmän tietoa koodiin tallennetaan, sitä yksinkertaisempi ja helpompi se on lukea. Pitkät verkko-osoitteet luovat tiheämpiä koodeja.</li>
+      <li><strong>Lisää selkeä kehotus.</strong> Kerro käyttäjälle, mitä koodin skannaamisesta seuraa. Esimerkiksi teksti "Skannaa ja katso ruokalista" motivoi ihmisiä toimimaan.</li>
+    </ul>
+    <p>Näiden yksinkertaisten ohjeiden avulla varmistat, että QR-koodisi palvelee tarkoitustaan ja tarjoaa käyttäjille sujuvan kokemuksen. Huolellisesti suunniteltu koodi luo ammattimaisen vaikutelman ja lisää todennäköisyyttä, että ihmiset skannaavat sen.</p>
+
+    <h2 id="turvallisuus">Turvallisuus ja QR-koodit</h2>
+    <p>QR-koodien yleistymisen myötä myös niihin liittyvät turvallisuuskysymykset ovat nousseet esiin. On tärkeää olla tietoinen mahdollisista riskeistä, jotta voit käyttää ja luoda koodeja turvallisesti. Koska QR-koodi itsessään ei paljasta silmämääräisesti, mihin se johtaa, huijarit ovat toisinaan käyttäneet niitä väärin.</p>
+    <p>Käyttäjänä kannattaa olla varovainen skannatessasi tuntemattomia koodeja, erityisesti julkisissa tiloissa, joissa aitoja koodeja on saatettu peittää väärennetyillä tarroilla. Ennen kuin avaat koodin takana olevan linkin, tarkista, että osoite näyttää luotettavalta. Useimmat nykyaikaiset puhelimet näyttävät verkko-osoitteen esikatselun ennen sivun avaamista, joten hyödynnä tätä ominaisuutta.</p>
+    <p>QR-koodien luojana voit lisätä luotettavuutta esittämällä koodin selkeästi ja kertomalla, mihin se johtaa. Kun käytät tätä generaattoria, koodit luodaan turvallisesti suoraan selaimessasi, eikä tietojasi jaeta kolmansille osapuolille. Tämä tekee työkalusta yksityisyyden kannalta erittäin luotettavan valinnan. Muista kuitenkin aina käyttää turvallisia HTTPS-osoitteita, kun koodaat verkko-osoitteita, sillä ne tarjoavat salatun yhteyden.</p>
+
+    <h2 id="usein-kysytyt">Usein kysytyt kysymykset</h2>
+    <div class="faq-item">
+      <h3>Onko QR-koodi generaattorin käyttö ilmaista?</h3>
+      <p>Kyllä, tämä työkalu on täysin ilmainen. Voit luoda niin monta QR-koodia kuin haluat ilman rekisteröitymistä, tilausmaksuja tai piilokuluja. Kaikki ominaisuudet ovat vapaasti käytettävissä.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Vanhenevatko luomani QR-koodit?</h3>
+      <p>Eivät. Tällä työkalulla luodut koodit ovat staattisia, mikä tarkoittaa, että ne toimivat ikuisesti niin kauan kuin niiden takana oleva sisältö (esimerkiksi verkkosivu) on olemassa. Koodit eivät vanhene ajan myötä.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Voinko käyttää koodia kaupallisiin tarkoituksiin?</h3>
+      <p>Kyllä, voit vapaasti käyttää luomiasi QR-koodeja niin henkilökohtaisiin kuin kaupallisiin tarkoituksiin, kuten markkinointimateriaaleissa, tuotteissa ja mainoksissa.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Missä muodossa voin ladata QR-koodin?</h3>
+      <p>Voit ladata koodin PNG-kuvatiedostona, joka soveltuu sekä digitaaliseen että painettuun käyttöön. PNG on laadukas kuvamuoto, joka säilyttää koodin terävyyden.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Toimiiko työkalu mobiililaitteilla?</h3>
+      <p>Ehdottomasti. Generaattori on suunniteltu responsiiviseksi, joten se toimii saumattomasti sekä älypuhelimilla, tableteilla että tietokoneilla. Käyttöliittymä mukautuu automaattisesti näytön kokoon.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Tallennetaanko syöttämäni tiedot mihinkään?</h3>
+      <p>Ei. Kaikki QR-koodin luominen tapahtuu suoraan selaimessasi. Tietojasi ei lähetetä palvelimelle eikä tallenneta, joten yksityisyytesi on turvattu.</p>
+    </div>
+
+    <h2>Yhteenveto</h2>
+    <p>QR-koodit ovat monipuolinen ja tehokas työkalu, joka yhdistää fyysisen ja digitaalisen maailman saumattomasti. Olitpa sitten yrittäjä, joka haluaa parantaa markkinointiaan, tai yksityishenkilö, joka haluaa jakaa tietoa vaivattomasti, QR-koodit tarjoavat ratkaisun lähes rajattomiin tarpeisiin. Tämä ilmainen QR-koodi generaattori tekee koodien luomisesta helppoa, nopeaa ja turvallista suoraan selaimessasi.</p>
+    <p>Kokeile työkalua rohkeasti ja luo ensimmäinen QR-koodisi jo tänään. Muista noudattaa antamiamme vinkkejä varmistaaksesi, että koodisi toimii luotettavasti ja näyttää ammattimaiselta. Toivotamme sinulle onnistuneita QR-koodiprojekteja!</p>
+  </article>
+</div>
+
+<footer>
+  <p>&copy; 2026 QR-koodi Generaattori. Ilmainen työkalu suomalaisille.</p>
+  <p>Katso myös kumppanisivumme: <a href="https://burgerkingbreakfastmenu.co.uk/" target="_blank" rel="noopener">Burger King Breakfast Menu</a></p>
+</footer>
+</body>
+</html>
